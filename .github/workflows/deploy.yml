@@ -1,0 +1,50 @@
+name: Build and Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Permite ejecutar manualmente
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        working-directory: ./app
+        run: flutter pub get
+
+      - name: Build web
+        working-directory: ./app
+        run: flutter build web --release
+
+      - name: Deploy to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "app/build/web/*"
+          target: "/var/www/wemake/"
+          strip_components: 3
+
+      - name: Restart Nginx (if needed)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            chown -R www-data:www-data /var/www/wemake/
+            chmod -R 755 /var/www/wemake/
+            systemctl reload nginx
