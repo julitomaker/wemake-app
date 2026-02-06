@@ -1,0 +1,117 @@
+name: wemake
+description: "WEMAKE - El Sistema Operativo para Makers. Make Today Count."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Networking & API
+  dio: ^5.4.0
+  retrofit: ^4.0.3
+
+  # Supabase
+  supabase_flutter: ^2.3.4
+
+  # Local Storage
+  hive_flutter: ^1.1.0
+  drift: ^2.14.1
+  sqlite3_flutter_libs: ^0.5.18
+  path_provider: ^2.1.2
+  shared_preferences: ^2.2.2
+
+  # Health Data
+  health: ^10.0.0
+
+  # Background Services
+  workmanager: ^0.5.2
+  flutter_background_service: ^5.0.5
+
+  # Location & Geofencing
+  geolocator: ^11.0.0
+  # geofence_service: ^5.0.0  # Add when needed for V1
+
+  # Notifications
+  awesome_notifications: ^0.8.3
+  flutter_local_notifications: ^16.3.2
+  timezone: ^0.9.2
+
+  # UI/Animations
+  rive: ^0.12.4
+  fl_chart: ^0.66.2
+  shimmer: ^3.0.0
+  flutter_animate: ^4.3.0
+  lottie: ^3.0.0
+
+  # Camera & Image
+  camera: ^0.10.5+9
+  image_picker: ^1.0.7
+  # image_cropper: ^5.0.1  # Disabled - incompatible with web on Flutter 3.24
+
+  # Auth
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^5.0.0
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.3.3
+  equatable: ^2.0.5
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  collection: ^1.18.0
+
+  # Icons
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.9
+  phosphor_flutter: ^2.0.1
+
+  # Forms
+  reactive_forms: ^16.1.1
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Environment
+  flutter_dotenv: ^5.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.1
+
+  # Code Generation
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.9
+  retrofit_generator: ^8.0.6
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+  drift_dev: ^2.14.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/images/
+    - assets/fonts/
+    - assets/animations/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
