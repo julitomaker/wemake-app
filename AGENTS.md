@@ -116,7 +116,29 @@ rsync -avz --delete build/web/ root@72.60.157.10:/var/www/wemake/
 
 ## URLs
 - **Producción**: https://app.powernax.com
-- **Repo**: (conectar GitHub)
+- **Repo**: https://github.com/julitomaker/wemake-app
+
+## VPS / Servidor de Producción
+- **IP**: 72.60.157.10
+- **Usuario**: root
+- **Password**: SomosELEVATE655+
+- **Directorio web**: /var/www/wemake/
+- **Nginx config**: /etc/nginx/sites-available/wemake
+
+### Comandos de Deploy
+```bash
+# Build local
+flutter build web --release
+
+# Subir al servidor
+sshpass -p 'SomosELEVATE655+' rsync -avz --delete build/web/ root@72.60.157.10:/var/www/wemake/
+
+# SSH directo al servidor
+sshpass -p 'SomosELEVATE655+' ssh root@72.60.157.10
+
+# Reiniciar nginx (si es necesario)
+sshpass -p 'SomosELEVATE655+' ssh root@72.60.157.10 "systemctl restart nginx"
+```
 
 ## Notas para el Agente
 - Mantener el estilo visual consistente (tema oscuro, colores por módulo)
