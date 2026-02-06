@@ -46,13 +46,13 @@ jobs:
           target: "/var/www/wemake/"
           strip_components: 3
 
-      - name: Restart Nginx (if needed)
+      - name: Set permissions
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            chown -R www-data:www-data /var/www/wemake/
-            chmod -R 755 /var/www/wemake/
-            systemctl reload nginx
+            chown -R www-data:www-data /var/www/wemake/ || true
+            chmod -R 755 /var/www/wemake/ || true
+            echo "Deploy complete!"
