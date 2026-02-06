@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../stats/screens/stats_screen.dart';
 
@@ -316,6 +317,9 @@ class HabitsScreen extends ConsumerWidget {
   }
 
   Widget _buildStreakStatsCard(int completed, int total) {
+    const streakCount = 15;
+    const streakColor = Color(0xFFF97316);
+
     return Row(
       children: [
         // Racha
@@ -324,19 +328,29 @@ class HabitsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [const Color(0xFFF97316).withOpacity(0.2), const Color(0xFFF97316).withOpacity(0.05)],
+                colors: [streakColor.withOpacity(0.25), streakColor.withOpacity(0.05)],
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF97316).withOpacity(0.3)),
+              border: Border.all(color: streakColor.withOpacity(0.35)),
+              boxShadow: [
+                BoxShadow(
+                  color: streakColor.withOpacity(0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Row(
               children: [
-                const Icon(Icons.local_fire_department, color: Color(0xFFF97316), size: 32),
+                Icon(Icons.local_fire_department, color: streakColor, size: 32)
+                    .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                    .scale(begin: const Offset(1, 1), end: const Offset(1.12, 1.12), duration: 900.ms)
+                    .fade(begin: 0.85, end: 1, duration: 900.ms),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('15', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text('$streakCount', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                     Text('Dias en fila', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11)),
                   ],
                 ),
@@ -443,7 +457,11 @@ class HabitsScreen extends ConsumerWidget {
               height: 40,
               decoration: BoxDecoration(color: habit.color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
               child: Icon(habit.icon, color: habit.color, size: 20),
-            ),
+            ).animate(target: habit.done ? 1 : 0).scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.08, 1.08),
+                  duration: 180.ms,
+                ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -502,11 +520,24 @@ class HabitsScreen extends ConsumerWidget {
                 color: habit.done ? habit.color : Colors.transparent,
                 border: Border.all(color: habit.done ? habit.color : habit.color.withOpacity(0.4), width: 2),
               ),
-              child: habit.done ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
-            ),
+              child: habit.done
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                      .animate()
+                      .scale(begin: const Offset(0.6, 0.6), end: const Offset(1, 1), duration: 200.ms, curve: Curves.easeOutBack)
+                      .fadeIn(duration: 200.ms)
+                  : null,
+            ).animate(target: habit.done ? 1 : 0).scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.05, 1.05),
+                  duration: 160.ms,
+                ),
           ],
         ),
-      ),
+      ).animate(target: habit.done ? 1 : 0).fade(
+            begin: 0.95,
+            end: 1,
+            duration: 200.ms,
+          ),
     );
   }
 
