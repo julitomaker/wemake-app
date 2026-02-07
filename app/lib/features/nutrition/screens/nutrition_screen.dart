@@ -1,6 +1,11 @@
+import 'dart:math' as math;
+
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:math' as math;
+
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/glass_container.dart';
 
 // ============ PROVIDERS ============
 
@@ -215,102 +220,151 @@ class NutritionDataNotifier extends StateNotifier<NutritionData> {
 
 // ============ SCREEN ============
 
-class NutritionScreen extends ConsumerWidget {
+class NutritionScreen extends ConsumerStatefulWidget {
   const NutritionScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NutritionScreen> createState() => _NutritionScreenState();
+}
+
+class _NutritionScreenState extends ConsumerState<NutritionScreen> {
+  late final ConfettiController _confettiController;
+  bool _celebrated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  void _triggerConfetti() {
+    if (_celebrated) return;
+    _celebrated = true;
+    _confettiController.play();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final data = ref.watch(nutritionDataProvider);
     final caloriesRemaining = data.caloriesTarget - data.caloriesConsumed;
     final mealsCompleted = data.meals.where((m) => m.isCompleted).length;
+    final macrosComplete = data.proteinConsumed >= data.proteinTarget &&
+        data.carbsConsumed >= data.carbsTarget &&
+        data.fatConsumed >= data.fatTarget;
+
+    if (macrosComplete) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _triggerConfetti());
+    } else {
+      _celebrated = false;
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0F),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Comida', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                  // Header
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: () => _showNutritionHistory(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(10),
+                      const Text('Comida', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _showNutritionHistory(context),
+                            child: GlassContainer(
+                              radius: 12,
+                              padding: const EdgeInsets.all(8),
+                              child: const Icon(Icons.history, color: Color(0xFF6366F1), size: 20),
+                            ),
                           ),
-                          child: const Icon(Icons.history, color: Color(0xFF6366F1), size: 20),
-                        ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _showAddFoodWithPhoto(context),
+                            child: GlassContainer(
+                              radius: 12,
+                              padding: const EdgeInsets.all(8),
+                              child: const Icon(Icons.camera_alt, color: Color(0xFF10B981), size: 20),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () => _showAddFoodWithPhoto(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.camera_alt, color: Color(0xFF10B981), size: 20),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Main Calories Card
+                  Hero(
+                    tag: 'nutrition-hero',
+                    child: _buildCaloriesCard(data, caloriesRemaining),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Macros Row
+                  _buildMacrosRow(data),
+
+                  const SizedBox(height: 20),
+
+                  // Water Tracking
+                  _buildWaterCard(ref, data),
+
+                  const SizedBox(height: 20),
+
+                  // Meals Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Plan de Comidas', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      GlassContainer(
+                        radius: 12,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: Text(
+                          '$mealsCompleted/${data.meals.length}',
+                          style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: 12),
+
+                  // Meals List
+                  ...data.meals.map((meal) => _buildMealCard(ref, meal)),
+
+                  const SizedBox(height: 100),
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              // Main Calories Card
-              _buildCaloriesCard(data, caloriesRemaining),
-
-              const SizedBox(height: 16),
-
-              // Macros Row
-              _buildMacrosRow(data),
-
-              const SizedBox(height: 20),
-
-              // Water Tracking
-              _buildWaterCard(ref, data),
-
-              const SizedBox(height: 20),
-
-              // Meals Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Plan de Comidas', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$mealsCompleted/${data.meals.length}',
-                      style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12),
-                    ),
-                  ),
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: false,
+                emissionFrequency: 0.4,
+                numberOfParticles: 18,
+                colors: const [
+                  Color(0xFF10B981),
+                  Color(0xFF22D3EE),
+                  Color(0xFF6366F1),
+                  Color(0xFFB8FF00),
                 ],
               ),
-
-              const SizedBox(height: 12),
-
-              // Meals List
-              ...data.meals.map((meal) => _buildMealCard(ref, meal)),
-
-              const SizedBox(height: 100),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -325,17 +379,10 @@ class NutritionScreen extends ConsumerWidget {
   Widget _buildCaloriesCard(NutritionData data, int remaining) {
     final progress = data.caloriesConsumed / data.caloriesTarget;
 
-    return Container(
+    return GlassContainer(
+      radius: 24,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
-      ),
+      gradient: AppTheme.wellnessGlow,
       child: Row(
         children: [
           // Circular progress
@@ -362,7 +409,7 @@ class NutritionScreen extends ConsumerWidget {
                   children: [
                     Text(
                       '$remaining',
-                      style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                      style: AppTheme.numberDisplayMedium.copyWith(color: Colors.white),
                     ),
                     Text('kcal restantes', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11)),
                   ],
@@ -426,13 +473,9 @@ class NutritionScreen extends ConsumerWidget {
   Widget _buildMacroCard(String label, int consumed, int target, String unit, Color color) {
     final progress = consumed / target;
 
-    return Container(
+    return GlassContainer(
+      radius: 16,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1F),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -444,7 +487,7 @@ class NutritionScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text('$consumed$unit', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text('$consumed$unit', style: AppTheme.numberDisplaySmall.copyWith(color: Colors.white, fontSize: 16)),
           const SizedBox(height: 2),
           Text('/ $target$unit', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10)),
           const SizedBox(height: 6),

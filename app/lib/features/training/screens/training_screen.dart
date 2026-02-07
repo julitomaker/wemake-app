@@ -1,7 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 
+import 'package:confetti/confetti.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/glass_container.dart';
+import '../../../shared/widgets/pressable_scale.dart';
 // ============ PROVIDERS ============
 
 final restTimerProvider = StateNotifierProvider<RestTimerNotifier, RestTimerState>((ref) {
@@ -125,19 +131,30 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
   bool _isWorkoutActive = false;
   int _currentExerciseIndex = 0;
   List<List<bool>> _setsCompleted = [];
+  List<List<double>> _rpeValues = [];
+  late final ConfettiController _confettiController;
 
   @override
   void initState() {
     super.initState();
     _initializeSets();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
   }
 
   void _initializeSets() {
     _setsCompleted = [];
+    _rpeValues = [];
     _totalSets = 0;
     for (var exercise in _todayWorkout) {
       final sets = exercise['sets'] as List;
       _setsCompleted.add(List.filled(sets.length, false));
+      _rpeValues.add(List.filled(sets.length, 7));
       _totalSets += sets.length;
     }
   }
@@ -161,6 +178,10 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
       if (_setsCompleted[exerciseIdx][setIdx]) {
         ref.read(restTimerProvider.notifier).start(90);
       }
+
+      if (_completedSets == _totalSets && _totalSets > 0) {
+        _confettiController.play();
+      }
     });
   }
 
@@ -172,26 +193,71 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0F),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildHeader(progress),
-            if (restTimer.isRunning) _buildRestTimer(restTimer),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _todayWorkout.length,
-                itemBuilder: (context, index) => _buildExerciseCard(index),
+            Column(
+              children: [
+                _buildHeader(progress),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _todayWorkout.length,
+                    itemBuilder: (context, index) {
+                      final isFocused = !_isWorkoutActive || index == _currentExerciseIndex;
+                      return IgnorePointer(
+                        ignoring: _isWorkoutActive && !isFocused,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 300),
+                          opacity: isFocused ? 1 : 0.25,
+                          child: _buildExerciseCard(index),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            if (restTimer.isRunning)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+                  child: _buildRestTimer(restTimer),
+                ),
+              ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: false,
+                emissionFrequency: 0.35,
+                numberOfParticles: 16,
+                colors: const [
+                  Color(0xFFB8FF00),
+                  Color(0xFF10B981),
+                  Color(0xFF22D3EE),
+                ],
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: !_isWorkoutActive
-          ? FloatingActionButton.extended(
-              onPressed: () => setState(() => _isWorkoutActive = true),
-              backgroundColor: const Color(0xFFB8FF00),
-              icon: const Icon(Icons.play_arrow, color: Colors.black),
-              label: const Text('Comenzar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          ? PressableScale(
+              onTap: () => setState(() {
+                _isWorkoutActive = true;
+                _currentExerciseIndex = 0;
+              }),
+              child: FloatingActionButton.extended(
+                onPressed: () => setState(() {
+                  _isWorkoutActive = true;
+                  _currentExerciseIndex = 0;
+                }),
+                backgroundColor: const Color(0xFFB8FF00),
+                icon: const Icon(Icons.play_arrow, color: Colors.black),
+                label: const Text('Comenzar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              ),
             )
           : null,
     );
@@ -348,32 +414,29 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
     final minutes = timer.seconds ~/ 60;
     final seconds = timer.seconds % 60;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF3B82F6).withOpacity(0.2), const Color(0xFF3B82F6).withOpacity(0.05)],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.5)),
-      ),
+    return GlassContainer(
+      radius: 22,
+      padding: const EdgeInsets.all(18),
+      gradient: AppTheme.brandGlow,
       child: Row(
         children: [
           Stack(
             alignment: Alignment.center,
             children: [
               SizedBox(
-                width: 60,
-                height: 60,
+                width: 74,
+                height: 74,
                 child: CircularProgressIndicator(
                   value: timer.seconds / timer.totalSeconds,
-                  strokeWidth: 4,
+                  strokeWidth: 6,
                   backgroundColor: Colors.white.withOpacity(0.1),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
-              Text('$minutes:${seconds.toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                '$minutes:${seconds.toString().padLeft(2, '0')}',
+                style: AppTheme.numberDisplaySmall.copyWith(color: Colors.white),
+              ),
             ],
           ),
           const SizedBox(width: 16),
@@ -388,9 +451,12 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
           ),
           GestureDetector(
             onTap: () => ref.read(restTimerProvider.notifier).stop(),
-            child: Container(
+            child: GlassContainer(
+              radius: 20,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(color: const Color(0xFF3B82F6), borderRadius: BorderRadius.circular(20)),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF22D3EE)],
+              ),
               child: const Text('Saltar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
             ),
           ),
@@ -494,7 +560,14 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
                   set['weight'] as double,
                   set['warmup'] as bool,
                   _setsCompleted[exerciseIndex][setIndex],
+                  _rpeValues[exerciseIndex][setIndex],
                   () => _toggleSet(exerciseIndex, setIndex),
+                  (value) {
+                    HapticFeedback.selectionClick();
+                    setState(() {
+                      _rpeValues[exerciseIndex][setIndex] = value;
+                    });
+                  },
                 );
               }),
               const SizedBox(height: 12),
@@ -523,7 +596,16 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
     );
   }
 
-  Widget _buildSetRow(int setNum, int reps, double weight, bool isWarmup, bool isCompleted, VoidCallback onTap) {
+  Widget _buildSetRow(
+    int setNum,
+    int reps,
+    double weight,
+    bool isWarmup,
+    bool isCompleted,
+    double rpeValue,
+    VoidCallback onTap,
+    ValueChanged<double> onRpeChanged,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -563,13 +645,8 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
             const SizedBox(width: 8),
             SizedBox(
               width: 60,
-              child: Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFFEAB308), Color(0xFFEF4444)]),
-                ),
-              ),
+              height: 64,
+              child: _buildRpeSlider(rpeValue, onRpeChanged),
             ),
             const SizedBox(width: 8),
             Container(
@@ -585,6 +662,60 @@ class _TrainingScreenState extends ConsumerState<TrainingScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRpeSlider(double value, ValueChanged<double> onChanged) {
+    final color = Color.lerp(const Color(0xFF10B981), const Color(0xFFEF4444), (value - 1) / 9)!;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: 10,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF10B981), Color(0xFFEAB308), Color(0xFFEF4444)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+          ),
+        ),
+        Positioned(
+          top: 0,
+          child: Text(
+            value.toInt().toString(),
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        RotatedBox(
+          quarterTurns: -1,
+          child: SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 6,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+              activeTrackColor: Colors.transparent,
+              inactiveTrackColor: Colors.transparent,
+              thumbColor: color,
+              overlayColor: color.withOpacity(0.2),
+            ),
+            child: Slider(
+              value: value,
+              min: 1,
+              max: 10,
+              divisions: 9,
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

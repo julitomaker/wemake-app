@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/onboarding_provider.dart';
@@ -77,6 +78,7 @@ class StepActivityLevel extends ConsumerWidget {
                   multiplier: level.$4,
                   isSelected: state.activityLevel == level.$1,
                   onTap: () {
+                    HapticFeedback.selectionClick();
                     ref
                         .read(onboardingProvider.notifier)
                         .setActivityLevel(level.$1);

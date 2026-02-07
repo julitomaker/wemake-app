@@ -3,12 +3,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'onboarding_state.freezed.dart';
 part 'onboarding_state.g.dart';
 
-/// Onboarding state that tracks progress through the 10-step process
+/// Onboarding state that tracks progress through the 11-step process
 @freezed
 class OnboardingState with _$OnboardingState {
   const factory OnboardingState({
     @Default(0) int currentStep,
-    @Default(10) int totalSteps,
+    @Default(11) int totalSteps,
 
     // Step 1: Nombre
     String? name,

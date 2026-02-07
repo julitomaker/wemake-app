@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/onboarding_provider.dart';
@@ -88,6 +89,7 @@ class StepGoals extends ConsumerWidget {
                       color: goal.$5,
                       isSelected: state.goalPrimary == goal.$1,
                       onTap: () {
+                        HapticFeedback.selectionClick();
                         ref.read(onboardingProvider.notifier).setGoals(
                               primary: goal.$1,
                             );
@@ -115,6 +117,7 @@ class StepGoals extends ConsumerWidget {
                   description: urgency.$3,
                   isSelected: state.goalUrgency == urgency.$1,
                   onTap: () {
+                    HapticFeedback.selectionClick();
                     ref.read(onboardingProvider.notifier).setGoals(
                           urgency: urgency.$1,
                         );

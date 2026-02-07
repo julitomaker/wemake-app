@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/onboarding_provider.dart';
@@ -65,6 +66,7 @@ class StepBodyType extends ConsumerWidget {
                   icon: type.$4,
                   isSelected: state.bodyType == type.$1,
                   onTap: () {
+                    HapticFeedback.selectionClick();
                     ref.read(onboardingProvider.notifier).setBodyType(type.$1);
                   },
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/onboarding_state.dart';
@@ -15,12 +16,26 @@ class _StepCognitiveState extends ConsumerState<StepCognitive> {
   int _currentQuestion = 0;
   final Map<String, int> _starterScores = {};
   final Map<String, int> _maintainerScores = {};
+  bool _showBrain = false;
 
   void _selectAnswer(CognitiveAnswer answer) {
     final question = cognitiveQuestions[_currentQuestion];
 
     _starterScores[question.id] = answer.starterScore;
     _maintainerScores[question.id] = answer.maintainerScore;
+    HapticFeedback.selectionClick();
+
+    setState(() {
+      _showBrain = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _showBrain = false;
+        });
+      }
+    });
 
     if (_currentQuestion < cognitiveQuestions.length - 1) {
       setState(() {
@@ -106,6 +121,17 @@ class _StepCognitiveState extends ConsumerState<StepCognitive> {
                 ),
               ),
               const Spacer(),
+              AnimatedScale(
+                scale: _showBrain ? 1.2 : 0.8,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
+                child: AnimatedOpacity(
+                  opacity: _showBrain ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: const Text('🧠', style: TextStyle(fontSize: 20)),
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 '${_currentQuestion + 1}/${cognitiveQuestions.length}',
                 style: theme.textTheme.bodyMedium?.copyWith(

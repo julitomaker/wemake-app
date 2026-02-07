@@ -17,6 +17,7 @@ import '../../features/gamification/screens/store_screen.dart';
 import '../../features/insights/screens/insights_screen.dart';
 import '../../features/settings/screens/notification_settings_screen.dart';
 import '../../features/sleep/screens/sleep_screen.dart';
+import '../../shared/widgets/glass_container.dart';
 import '../providers/auth_provider.dart';
 import '../services/demo_mode.dart';
 
@@ -326,22 +327,13 @@ class MainBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: GlassContainer(
+          radius: 24,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
