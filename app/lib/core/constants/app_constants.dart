@@ -19,7 +19,7 @@ class AppConstants {
   // ===================
   // ONBOARDING
   // ===================
-  static const int onboardingTotalSteps = 10;
+  static const int onboardingTotalSteps = 11;
   static const int minFocusScore = 0;
   static const int maxFocusScore = 100;
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/onboarding_provider.dart';
@@ -71,6 +72,7 @@ class StepEquipment extends ConsumerWidget {
                   icon: option.$4,
                   isSelected: state.equipmentAccess == option.$1,
                   onTap: () {
+                    HapticFeedback.selectionClick();
                     ref
                         .read(onboardingProvider.notifier)
                         .setEquipmentAccess(option.$1);

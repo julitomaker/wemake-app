@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// WEMAKE Design System
 /// Filosofia: Clara, firme, sobria, inteligente
@@ -58,10 +59,66 @@ class AppTheme {
   static const Color surfaceDark = Color(0xFF1A1A2E);
 
   // ===================
+  // GRADIENTS
+  // ===================
+
+  static const LinearGradient brandGlow = LinearGradient(
+    colors: [Color(0xFF6366F1), Color(0xFF22D3EE)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient wellnessGlow = LinearGradient(
+    colors: [Color(0xFF10B981), Color(0xFF22D3EE)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient trainingGlow = LinearGradient(
+    colors: [Color(0xFFB8FF00), Color(0xFF10B981)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient glassSurface = LinearGradient(
+    colors: [
+      Color(0x1FFFFFFF),
+      Color(0x08FFFFFF),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const SweepGradient scoreRingGradient = SweepGradient(
+    colors: [
+      Color(0xFF22D3EE),
+      Color(0xFF10B981),
+      Color(0xFF14F0C6),
+    ],
+  );
+
+  // ===================
+  // GLASS UI
+  // ===================
+
+  static const double glassBlur = 18;
+  static const Color glassBorder = Color(0x14FFFFFF);
+  static const Color glassFill = Color(0x0FFFFFFF);
+
+  static BoxDecoration glassBoxDecoration({double radius = radiusXl}) {
+    return BoxDecoration(
+      gradient: glassSurface,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: glassBorder),
+    );
+  }
+
+  // ===================
   // TYPOGRAPHY
   // ===================
 
   static const String fontFamily = 'Inter';
+  static const String numberFontFamily = 'SpaceGrotesk';
 
   static const TextStyle displayLarge = TextStyle(
     fontFamily: fontFamily,
@@ -182,6 +239,27 @@ class AppTheme {
     letterSpacing: 0.5,
     height: 1.45,
   );
+
+  static TextStyle get numberDisplayLarge => GoogleFonts.spaceGrotesk(
+        fontSize: 48,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
+        height: 1.05,
+      );
+
+  static TextStyle get numberDisplayMedium => GoogleFonts.spaceGrotesk(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+        height: 1.1,
+      );
+
+  static TextStyle get numberDisplaySmall => GoogleFonts.spaceGrotesk(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.2,
+        height: 1.1,
+      );
 
   // ===================
   // SPACING

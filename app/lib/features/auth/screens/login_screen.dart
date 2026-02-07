@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/auth_provider.dart';
+import '../../../shared/widgets/pressable_scale.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -11,9 +12,26 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with SingleTickerProviderStateMixin {
   bool _isLoading = false;
   String? _errorMessage;
+  late final AnimationController _backgroundController;
+
+  @override
+  void initState() {
+    super.initState();
+    _backgroundController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _backgroundController.dispose();
+    super.dispose();
+  }
 
   Future<void> _signInWithGoogle() async {
     setState(() {
@@ -91,68 +109,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-
-              // Logo & Branding
-              _buildBranding(theme),
-
-              const Spacer(flex: 1),
-
-              // Value Proposition
-              _buildValueProposition(theme),
-
-              const Spacer(flex: 2),
-
-              // Error Message
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
+        child: Stack(
+          children: [
+            AnimatedBuilder(
+              animation: _backgroundController,
+              builder: (context, _) {
+                final t = _backgroundController.value;
+                return Container(
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: const [
+                        Color(0xFF0D0D0F),
+                        Color(0xFF131A2A),
+                        Color(0xFF0D0D0F),
+                      ],
+                      begin: Alignment(-1 + t, -1),
+                      end: Alignment(1 - t, 1),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: theme.colorScheme.error,
-                        size: 20,
+                );
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const Spacer(flex: 2),
+
+                  _buildBranding(theme),
+
+                  const Spacer(flex: 1),
+
+                  _buildValueProposition(theme),
+
+                  const Spacer(flex: 2),
+
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: theme.textTheme.bodySmall?.copyWith(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
                             color: theme.colorScheme.error,
+                            size: 20,
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
-              // Sign In Buttons
-              _buildSignInButtons(theme),
+                  _buildSignInButtons(theme),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // Terms
-              _buildTerms(theme),
+                  _buildTerms(theme),
 
-              const SizedBox(height: 32),
-            ],
-          ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -233,36 +268,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Column(
       children: [
         // Google Sign In
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: OutlinedButton.icon(
-            onPressed: _isLoading ? null : _signInWithGoogle,
-            icon: _isLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: theme.colorScheme.primary,
+        PressableScale(
+          onTap: _isLoading ? null : _signInWithGoogle,
+          child: SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: OutlinedButton.icon(
+              onPressed: _isLoading ? null : _signInWithGoogle,
+              icon: _isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.primary,
+                      ),
+                    )
+                  : Image.network(
+                      'https://www.google.com/favicon.ico',
+                      width: 20,
+                      height: 20,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.g_mobiledata,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
-                  )
-                : Image.network(
-                    'https://www.google.com/favicon.ico',
-                    width: 20,
-                    height: 20,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.g_mobiledata,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-            label: const Text('Continuar con Google'),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.3),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              label: const Text('Continuar con Google'),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.3),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -270,27 +308,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         const SizedBox(height: 12),
 
         // Apple Sign In
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton.icon(
-            onPressed: _isLoading ? null : _signInWithApple,
-            icon: _isLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                  )
-                : const Icon(Icons.apple, size: 24),
-            label: const Text('Continuar con Apple'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.onSurface,
-              foregroundColor: theme.colorScheme.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        PressableScale(
+          onTap: _isLoading ? null : _signInWithApple,
+          child: SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton.icon(
+              onPressed: _isLoading ? null : _signInWithApple,
+              icon: _isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    )
+                  : const Icon(Icons.apple, size: 24),
+              label: const Text('Continuar con Apple'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.onSurface,
+                foregroundColor: theme.colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),

@@ -72,6 +72,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_svg: ^2.0.9
   phosphor_flutter: ^2.0.1
+  google_fonts: ^6.1.0
+  confetti: ^0.7.0
 
   # Forms
   reactive_forms: ^16.1.1
