@@ -797,7 +797,7 @@ class NutritionScreen extends ConsumerWidget {
     return const [
       MealTargetInfo(MealType.breakfast, PhosphorIconsFill.sun),
       MealTargetInfo(MealType.snackAm, PhosphorIconsFill.appleLogo),
-      MealTargetInfo(MealType.lunch, PhosphorIconsFill.plate),
+      MealTargetInfo(MealType.lunch, PhosphorIconsFill.forkKnife),
       MealTargetInfo(MealType.snackPm, PhosphorIconsFill.bowlFood),
       MealTargetInfo(MealType.dinner, PhosphorIconsFill.moonStars),
     ];
@@ -874,7 +874,7 @@ class NutritionScreen extends ConsumerWidget {
     return switch (type) {
       MealType.breakfast => PhosphorIconsFill.sun,
       MealType.snackAm => PhosphorIconsFill.appleLogo,
-      MealType.lunch => PhosphorIconsFill.plate,
+      MealType.lunch => PhosphorIconsFill.forkKnife,
       MealType.snackPm => PhosphorIconsFill.bowlFood,
       MealType.dinner => PhosphorIconsFill.moonStars,
       MealType.snackNight => PhosphorIconsFill.cookie,
